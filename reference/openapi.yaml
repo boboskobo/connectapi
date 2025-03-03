@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: Connect AI API
+  version: '1.0'
+  description: API documentation for Connect AI integration
+  contact:
+    name: Connect AI Support
+    email: support@connectsoftware.inc
+
+servers:
+  - url: https://api.yourservice.com/v1
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your API key in the format `Bearer YOUR_API_KEY`
+
+  schemas:
+    Contact:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          description: Contact's phone number in E.164 format
+          example: "+15555555555"
+      required:
+        - phoneNumber
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+paths:
+  /contacts:
+    post:
+      summary: Create or update a contact
+      description: Creates a new contact or updates an existing one based on phone number
+      operationId: createUpdateContact
+      tags:
+        - Contacts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        '200':
+          description: Contact created or updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      contactId:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid API key
+        '403':
+          description: Forbidden - Insufficient permissions
+        '429':
+          description: Too Many Requests - Rate limit exceeded 
